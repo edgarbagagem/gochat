@@ -15,12 +15,12 @@ Simple chat application with weird features like a cron job for displaying weath
 ### Databases
 
 - Cloud File Storage (Which??)
-- Cloud SQL Database (Turso?)
+- Cloud SQL Database (Turso)
 - Cloud NoSQL Database (Mongo atlas?)
 
 ### External APIs
 
-Idea: https://openweathermap.org/api
+Idea: https://openweathermap.org/api https://api.ipma.pt/
 
 ### Cron Job
 
