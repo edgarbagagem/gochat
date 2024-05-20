@@ -1,9 +1,16 @@
 package main
 
-import "log"
+import (
+	"fmt"
+	"log"
+)
 
 func main() {
-	databaseURL := "libsql://[DATABASE].turso.io?authToken=[TOKEN]"
+
+	database := InitConfig().DBName
+	token := InitConfig().DBToken
+
+	databaseURL := fmt.Sprintf("libsql://%s.turso.io?authToken=%s", database, token)
 
 	tursoStorage := NewTursoStorage(databaseURL)
 

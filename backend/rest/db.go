@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"log"
+
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
 type TursoStorage struct {
