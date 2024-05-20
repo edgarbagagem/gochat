@@ -6,7 +6,7 @@ Simple chat application with weird features like a cron job for displaying weath
 
 - Rest API (Golang)
 
-- Websocket Server (Golang?)
+- Websocket Server (Golang? Node(Socket-io)?)
 
 ### Frontend
 
