@@ -1,4 +1,4 @@
-package main
+package db
 
 import "database/sql"
 
@@ -11,12 +11,12 @@ type Storage struct {
 	db *sql.DB
 }
 
-func NewStore(db *sql.DB) *Storage{
+func NewStore(db *sql.DB) *Storage {
 	return &Storage{
 		db: db,
 	}
 }
 
-func (s *Storage) CreateUser() error{
+func (s *Storage) CreateUser() error {
 	return nil
 }

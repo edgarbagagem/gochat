@@ -3,23 +3,23 @@ package main
 import (
 	"fmt"
 	"log"
+
+	api "github.com/edgarbagagem/gochat/api"
+	cfg "github.com/edgarbagagem/gochat/config"
+	turso "github.com/edgarbagagem/gochat/db"
 )
 
 func main() {
+	databaseURL := fmt.Sprintf("libsql://%s.turso.io?authToken=%s", cfg.Envs.DBName, cfg.Envs.DBToken)
 
-	database := InitConfig().DBName
-	token := InitConfig().DBToken
-
-	databaseURL := fmt.Sprintf("libsql://%s.turso.io?authToken=%s", database, token)
-
-	tursoStorage := NewTursoStorage(databaseURL)
+	tursoStorage := turso.NewTursoStorage(databaseURL)
 
 	db, err := tursoStorage.Init()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	store := NewStore(db)
-	api := NewAPIServer(":8080", store)
+	store := turso.NewStore(db)
+	api := api.NewAPIServer(":8080", store)
 	api.Run()
 }
