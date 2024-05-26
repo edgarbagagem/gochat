@@ -23,7 +23,7 @@ func NewTursoStorage(url string) *TursoStorage {
 		log.Fatal(err)
 	}
 
-	log.Println("Connected to Turso")
+	log.Println("Turso DB: Successfully connected!")
 
 	return &TursoStorage{
 		db: db,

@@ -1,6 +1,10 @@
 package config
 
-import "os"
+import (
+	"os"
+
+	"github.com/joho/godotenv"
+)
 
 type Config struct {
 	DBName    string
@@ -12,9 +16,10 @@ type Config struct {
 var Envs = InitConfig()
 
 func InitConfig() Config {
+	godotenv.Load()
 	return Config{
 		Port:      getEnv("PORT", ":8080"),
-		DBName:    getEnv("DB_NAME", "gochat"),
+		DBName:    getEnv("DB_NAME", "dbname"),
 		DBToken:   getEnv("DB_TOKEN", "randomdatabasetoken"),
 		JWTSecret: getEnv("JWT_SECRET", "randomjwtsecret"),
 	}

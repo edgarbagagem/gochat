@@ -1,23 +1,24 @@
 package api
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 
-	db "github.com/edgarbagagem/gochat/db"
+	"github.com/edgarbagagem/gochat/services/user"
 	"github.com/gorilla/mux"
 )
 
 type APIServer struct {
-	addr  string
-	store db.Store
+	addr string
+	db   *sql.DB
 }
 
 // Constructor
-func NewAPIServer(addr string, store db.Store) *APIServer {
+func NewAPIServer(addr string, db *sql.DB) *APIServer {
 	return &APIServer{
-		addr:  addr,
-		store: store,
+		addr: addr,
+		db:   db,
 	}
 }
 
@@ -28,6 +29,9 @@ func (s *APIServer) Run() {
 	subrouter := router.PathPrefix("/api/v1/").Subrouter()
 
 	//register services
+	userStore := user.NewStore(s.db)
+	userHandler := user.NewHandler(userStore)
+	userHandler.RegisterRoutes(subrouter)
 
 	log.Fatal(http.ListenAndServe(s.addr, subrouter))
 }
