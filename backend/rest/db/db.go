@@ -11,12 +11,11 @@ type TursoStorage struct {
 	db *sql.DB
 }
 
-func NewTursoStorage(url string) *TursoStorage {
+func NewTursoStorage(url string) (*sql.DB, error) {
 	db, err := sql.Open("libsql", url)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
 
 	err = db.Ping()
 	if err != nil {
@@ -25,13 +24,5 @@ func NewTursoStorage(url string) *TursoStorage {
 
 	log.Println("Turso DB: Successfully connected!")
 
-	return &TursoStorage{
-		db: db,
-	}
-}
-
-func (s *TursoStorage) Init() (*sql.DB, error) {
-	//Initialize
-
-	return s.db, nil
+	return db, nil
 }

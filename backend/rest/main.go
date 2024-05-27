@@ -12,9 +12,7 @@ import (
 func main() {
 	databaseURL := fmt.Sprintf("libsql://%s.turso.io?authToken=%s", config.Envs.DBName, config.Envs.DBToken)
 
-	tursoStorage := db.NewTursoStorage(databaseURL)
-
-	db, err := tursoStorage.Init()
+	db, err := db.NewTursoStorage(databaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
