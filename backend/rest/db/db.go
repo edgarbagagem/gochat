@@ -7,10 +7,6 @@ import (
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
-type TursoStorage struct {
-	db *sql.DB
-}
-
 func NewTursoStorage(url string) (*sql.DB, error) {
 	db, err := sql.Open("libsql", url)
 	if err != nil {

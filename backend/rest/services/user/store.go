@@ -73,10 +73,10 @@ func scanRowsIntoUser(rows *sql.Rows) (*types.User, error) {
 		&user.ID,
 		&user.Username,
 		&user.Password,
+		&user.Photo,
 	)
 	if err != nil {
 		return nil, err
 	}
-
 	return user, nil
 }
