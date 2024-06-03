@@ -6,6 +6,7 @@ type UserStore interface {
 	GetUserByUsername(username string) (*User, error)
 	GetUserById(id int) (*User, error)
 	CreateUser(User) error
+	UpdateUser(*User) error
 }
 
 type User struct {
@@ -23,4 +24,8 @@ type RegisterUserPayload struct {
 type LoginUserPayload struct {
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required"`
+}
+
+type UpdateUserPayload struct {
+	Photo sql.NullString `json:"photo"`
 }

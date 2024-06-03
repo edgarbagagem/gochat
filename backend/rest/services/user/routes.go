@@ -3,6 +3,7 @@ package user
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/edgarbagagem/gochat/config"
 	"github.com/edgarbagagem/gochat/services/auth"
@@ -20,8 +21,70 @@ func NewHandler(store types.UserStore) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/login", h.handleLogin).Methods("POST")
-	router.HandleFunc("/register", h.handleRegister).Methods("POST")
+	router.HandleFunc("/login", h.handleLogin).Methods(http.MethodPost)
+	router.HandleFunc("/register", h.handleRegister).Methods(http.MethodPost)
+	router.HandleFunc("/users/{userID}", h.handleGetUser).Methods(http.MethodGet)
+	router.HandleFunc("/users/{userID}", h.handleUpdateUser).Methods(http.MethodPut)
+}
+
+func (h *Handler) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID := vars["userID"]
+	// Handle editing user by ID logic here, using userID
+	var payload types.UpdateUserPayload
+	if err := utils.ParseJson(r, &payload); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	id, err := strconv.Atoi(userID)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid user ID %d, error: %s", id, err.Error()))
+		return
+	}
+
+	user, err := h.store.GetUserById(id)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("user not found,  %s", err.Error()))
+		return
+	}
+
+	//Update User
+	if payload.Photo.Valid {
+		user.Photo = payload.Photo
+	}
+
+	err = h.store.UpdateUser(user)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, "")
+}
+
+func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	str, ok := vars["userID"]
+	if !ok {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("missing user ID"))
+		return
+	}
+
+	userID, err := strconv.Atoi(str)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid product ID"))
+		return
+	}
+
+	user, err := h.store.GetUserById(userID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, user)
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {

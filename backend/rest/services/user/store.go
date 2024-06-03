@@ -66,6 +66,15 @@ func (s *Store) GetUserById(id int) (*types.User, error) {
 	return u, nil
 }
 
+func (s *Store) UpdateUser(user *types.User) error {
+	_, err := s.db.Exec("UPDATE users SET  photo = ? WHERE id = ?", user.Photo.String, user.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func scanRowsIntoUser(rows *sql.Rows) (*types.User, error) {
 	user := new(types.User)
 
