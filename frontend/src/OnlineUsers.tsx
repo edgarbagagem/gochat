@@ -5,7 +5,7 @@ const onlineUsers = [{id: 1, name: 'Alice'}, {id: 2, name: 'Bob'}, {id: 3, name:
 export default function OnlineUsers() {
 return (
     <Disclosure>
-        <div className="m-1 border border-gray-400 dark:border-gray-800 rounded-md bg-gray-100 dark:bg-gray-900">
+        <div className="mx-1 border border-gray-400 dark:border-gray-800 rounded-md bg-gray-100 dark:bg-gray-900 h-full">
             <div className="rounded-md py-2 px-2 bg-gray-200 dark:bg-gray-950">
                 <p className="text-base text-gray-800 dark:text-gray-200 font-thin">Online Users</p>
             </div>
