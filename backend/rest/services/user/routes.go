@@ -1,10 +1,15 @@
 package user
 
 import (
+	"context"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"strconv"
+	"time"
 
+	"cloud.google.com/go/storage"
 	"github.com/edgarbagagem/gochat/config"
 	"github.com/edgarbagagem/gochat/services/auth"
 	"github.com/edgarbagagem/gochat/types"
@@ -25,6 +30,78 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/register", h.handleRegister).Methods(http.MethodPost)
 	router.HandleFunc("/users/{user}", h.handleGetUser).Methods(http.MethodGet)
 	router.HandleFunc("/users/{userID}", h.handleUpdateUser).Methods(http.MethodPut)
+	router.HandleFunc("/upload-photo", h.handleUploadPhoto).Methods(http.MethodPost)
+}
+
+func (h *Handler) handleUploadPhoto(w http.ResponseWriter, r *http.Request) {
+	// Parse the multipart form
+	err := r.ParseMultipartForm(10 << 20) // 10 MB
+	if err != nil {
+		http.Error(w, "Could not parse multipart form", http.StatusBadRequest)
+		return
+	}
+
+	// Get the user ID or username from the form
+	username := r.FormValue("username")
+	if username == "" {
+		http.Error(w, "Missing username", http.StatusBadRequest)
+		return
+	}
+
+	user, err := h.store.GetUserByUsername(username)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	// Get the file from the request
+	file, handler, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, "Could not get uploaded file", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	// Upload the file to Google Cloud Storage
+	url, err := uploadFileToGCS(file, handler)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Could not upload file to GCS %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	user.Photo.String = url
+
+	h.store.UpdateUser(user)
+
+	utils.WriteJSON(w, http.StatusOK, url)
+}
+
+var bucketName = "gochat-images"
+
+func uploadFileToGCS(file multipart.File, handler *multipart.FileHeader) (string, error) {
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to create client: %v", err)
+	}
+	defer client.Close()
+
+	bucket := client.Bucket(bucketName)
+	objectName := fmt.Sprintf("%d-%s", time.Now().Unix(), handler.Filename)
+	wc := bucket.Object(objectName).NewWriter(ctx)
+	if _, err = io.Copy(wc, file); err != nil {
+		return "", fmt.Errorf("failed to copy file to bucket: %v", err)
+	}
+	if err := wc.Close(); err != nil {
+		return "", fmt.Errorf("failed to close bucket writer: %v", err)
+	}
+
+	// // Make the object publicly accessible
+	// if err := bucket.Object(objectName).ACL().Set(ctx, storage.AllUsers, storage.RoleReader); err != nil {
+	// 	return "", fmt.Errorf("failed to set bucket object ACL: %v", err)
+	// }
+
+	return fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucketName, objectName), nil
 }
 
 func (h *Handler) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
@@ -70,14 +147,14 @@ func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request) {
 
 	if _, err := strconv.Atoi(user); err == nil {
 		// Handle get user by ID
-		h.handleGetUserById(w, r, user)
+		h.handleGetUserPhotoById(w, r, user)
 	} else {
 		// Handle get user by username
-		h.handleGetUserByUsername(w, r, user)
+		h.handleGetUserPhotoByUsername(w, r, user)
 	}
 }
 
-func (h *Handler) handleGetUserById(w http.ResponseWriter, _ *http.Request, id string) {
+func (h *Handler) handleGetUserPhotoById(w http.ResponseWriter, _ *http.Request, id string) {
 
 	userID, err := strconv.Atoi(id)
 	if err != nil {
@@ -91,10 +168,10 @@ func (h *Handler) handleGetUserById(w http.ResponseWriter, _ *http.Request, id s
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, user)
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"photo": user.Photo.String})
 }
 
-func (h *Handler) handleGetUserByUsername(w http.ResponseWriter, _ *http.Request, username string) {
+func (h *Handler) handleGetUserPhotoByUsername(w http.ResponseWriter, _ *http.Request, username string) {
 
 	user, err := h.store.GetUserByUsername(username)
 	if err != nil {
@@ -102,7 +179,7 @@ func (h *Handler) handleGetUserByUsername(w http.ResponseWriter, _ *http.Request
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, user)
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"photo": user.Photo.String})
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -130,7 +207,7 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token, "username": user.Username, "photoURL": user.Photo.String})
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token, "username": user.Username})
 
 }
 func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {

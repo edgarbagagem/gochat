@@ -2,10 +2,14 @@
 
 import React, { useRef, useState } from "react";
 import toast from "react-hot-toast";
+import axios from "../api/axios";
+import { useNavigate } from "react-router-dom";
+import { AxiosError } from "axios";
 
 const UploadProfilePhoto: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -20,7 +24,7 @@ const UploadProfilePhoto: React.FC = () => {
     }
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) {
       toast.error("Please select a file");
       return;
@@ -28,6 +32,28 @@ const UploadProfilePhoto: React.FC = () => {
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("username", sessionStorage.getItem("username") || "");
+
+    try {
+      await axios.post("upload-photo", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      toast.success("Profile photo uploaded successfully");
+      navigate("/");
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      if (axiosError.response) {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        toast.error(`Upload failed: ${axiosError.response.data}`);
+        console.error("Upload failed:", axiosError.response.data);
+      } else {
+        toast.error("Upload failed: Network or unknown error");
+        console.error("Upload failed:", axiosError.message);
+      }
+    }
   };
 
   return (
@@ -62,7 +88,9 @@ const UploadProfilePhoto: React.FC = () => {
         </div>
 
         <button
-          onClick={handleUpload}
+          onClick={() => {
+            void handleUpload();
+          }}
           className="w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Upload

@@ -8,11 +8,12 @@ import (
 )
 
 type Config struct {
-	DBName                 string
-	DBToken                string
-	Port                   string
-	JWTSecret              string
-	JWTExpirationInSeconds int64
+	DBName                       string
+	DBToken                      string
+	Port                         string
+	JWTSecret                    string
+	GoogleApplicationCredentials string
+	JWTExpirationInSeconds       int64
 }
 
 var Envs = InitConfig()
@@ -20,11 +21,12 @@ var Envs = InitConfig()
 func InitConfig() Config {
 	godotenv.Load()
 	return Config{
-		Port:                   getEnv("PORT", ":8080"),
-		DBName:                 getEnv("DB_NAME", "dbname"),
-		DBToken:                getEnv("DB_TOKEN", "randomdatabasetoken"),
-		JWTSecret:              getEnv("JWT_SECRET", "randomjwtsecret"),
-		JWTExpirationInSeconds: getEnvAsInt("JWT_EXPIRATION_SECONDS", 3600),
+		Port:                         getEnv("PORT", ":8080"),
+		DBName:                       getEnv("DB_NAME", "dbname"),
+		DBToken:                      getEnv("DB_TOKEN", "randomdatabasetoken"),
+		JWTSecret:                    getEnv("JWT_SECRET", "randomjwtsecret"),
+		JWTExpirationInSeconds:       getEnvAsInt("JWT_EXPIRATION_SECONDS", 3600),
+		GoogleApplicationCredentials: getEnv("GOOGLE_APPLICATION_CREDENTIALS", ""),
 	}
 }
 

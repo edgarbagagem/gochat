@@ -8,6 +8,10 @@ import {
 } from "@headlessui/react";
 import { isAuthenticated } from "./utils/auth";
 import { useEffect, useState } from "react";
+import axios from "./api/axios";
+import { GetUserResponse } from "./types/auth";
+import { AxiosError } from "axios";
+import toast from "react-hot-toast";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -15,9 +19,30 @@ function classNames(...classes: string[]) {
 
 export default function NavBar() {
   const [username, setUsername] = useState<string>("");
+  const [userPhoto, setUserPhoto] = useState<string>("");
 
   useEffect(() => {
-    setUsername(sessionStorage.getItem("username") || "");
+    const username = sessionStorage.getItem("username");
+    setUsername(username || "");
+    if (!username) return;
+
+    axios
+      .get<GetUserResponse>(`/users/${username}`)
+      .then((resp) => {
+        const user: GetUserResponse = resp.data;
+        setUserPhoto(user.photo);
+      })
+      .catch((error) => {
+        const axiosError = error as AxiosError;
+        if (axiosError.response) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          toast.error(`Upload failed: ${axiosError.response.data}`);
+          console.error("Upload failed:", axiosError.response.data);
+        } else {
+          toast.error("Upload failed: Network or unknown error");
+          console.error("Upload failed:", axiosError.message);
+        }
+      });
   }, []);
 
   const handleSignOut = () => {
@@ -47,7 +72,11 @@ export default function NavBar() {
                       <MenuButton className="relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-gray-800 dark:focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                         <span className="absolute -inset-1.5" />
                         <span className="sr-only">Open user menu</span>
-                        <img className="h-8 w-8 rounded-full" src="" alt="" />
+                        <img
+                          className="h-8 w-8 rounded-full"
+                          src={userPhoto}
+                          alt=""
+                        />
                       </MenuButton>
                     </div>
                     <Transition
