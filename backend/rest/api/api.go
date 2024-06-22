@@ -7,6 +7,7 @@ import (
 
 	"github.com/edgarbagagem/gochat/services/user"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 type APIServer struct {
@@ -33,5 +34,16 @@ func (s *APIServer) Run() {
 	userHandler := user.NewHandler(userStore)
 	userHandler.RegisterRoutes(subrouter)
 
-	log.Fatal(http.ListenAndServe(s.addr, subrouter))
+	// Configure CORS
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"}, // Replace with your frontend URL
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+	})
+
+	// Use the CORS middleware
+	handler := c.Handler(subrouter)
+
+	log.Fatal(http.ListenAndServe(s.addr, handler))
 }

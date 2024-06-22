@@ -23,7 +23,7 @@ func NewHandler(store types.UserStore) *Handler {
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/login", h.handleLogin).Methods(http.MethodPost)
 	router.HandleFunc("/register", h.handleRegister).Methods(http.MethodPost)
-	router.HandleFunc("/users/{userID}", h.handleGetUser).Methods(http.MethodGet)
+	router.HandleFunc("/users/{user}", h.handleGetUser).Methods(http.MethodGet)
 	router.HandleFunc("/users/{userID}", h.handleUpdateUser).Methods(http.MethodPut)
 }
 
@@ -66,19 +66,37 @@ func (h *Handler) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	str, ok := vars["userID"]
-	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("missing user ID"))
-		return
-	}
+	user := vars["user"]
 
-	userID, err := strconv.Atoi(str)
+	if _, err := strconv.Atoi(user); err == nil {
+		// Handle get user by ID
+		h.handleGetUserById(w, r, user)
+	} else {
+		// Handle get user by username
+		h.handleGetUserByUsername(w, r, user)
+	}
+}
+
+func (h *Handler) handleGetUserById(w http.ResponseWriter, _ *http.Request, id string) {
+
+	userID, err := strconv.Atoi(id)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid product ID"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid user ID"))
 		return
 	}
 
 	user, err := h.store.GetUserById(userID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, user)
+}
+
+func (h *Handler) handleGetUserByUsername(w http.ResponseWriter, _ *http.Request, username string) {
+
+	user, err := h.store.GetUserByUsername(username)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
@@ -112,7 +130,7 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token})
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token, "username": user.Username, "photoURL": user.Photo.String})
 
 }
 func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
