@@ -1,35 +1,40 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
+import express from "express";
+import { createServer } from "node:http";
+import { Server } from "socket.io";
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+  },
+});
 
-const connectedUsers = {};
+app.get("/", (req, res) => {
+  res.send("<h1>Gochat Websocket Server</h1>");
+});
+
+let connectedUsers = [];
 
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
 
-  // Add the user to the connected users list
-  connectedUsers[socket.id] = { id: socket.id };
+  const emitUserList = () => {
+    io.emit("updateUsers", connectedUsers);
+  };
 
-  // Notify all clients about the updated user list
-  io.emit("userList", Object.values(connectedUsers));
-
-  // Broadcast a message to all clients
-  socket.on("chatMessage", (msg) => {
-    io.emit("chatMessage", { id: socket.id, msg });
-  });
-
-  // Handle user disconnect
   socket.on("disconnect", () => {
-    console.log("a user disconnected", socket.id);
-    delete connectedUsers[socket.id];
-    io.emit("userList", Object.values(connectedUsers));
+    connectedUsers = connectedUsers.filter((user) => user.socket != socket.id);
+    console.log("user disconnected");
+    emitUserList();
+  });
+  socket.on("register", (username) => {
+    connectedUsers.push({ socket: socket.id, username: username });
+    console.log("Registering user ", username);
+    emitUserList();
   });
 });
 
 server.listen(3000, () => {
-  console.log("listening on *:3000");
+  console.log("server running at http://localhost:3000");
 });

@@ -1,17 +1,23 @@
 import { Disclosure } from "@headlessui/react";
+import { useState } from "react";
 
-const msgs = [
-  { sentBy: "Alice", content: "Hello!" },
-  { sentBy: "Bob", content: "Hi!" },
-  { sentBy: "Alice", content: "How are you?" },
-  { sentBy: "Bob", content: "Good!" },
-  { sentBy: "Alice", content: "Great!" },
-];
+interface IMessage {
+  sentBy: string;
+  content: string;
+}
 
 export default function Chat() {
+  const [messages, setMessages] = useState<IMessage[]>([
+    { sentBy: "Alice", content: "Hello!" },
+    { sentBy: "Bob", content: "Hi!" },
+    { sentBy: "Alice", content: "How are you?" },
+    { sentBy: "Bob", content: "Good!" },
+    { sentBy: "Alice", content: "Great!" },
+  ]);
+
   return (
     <Disclosure>
-      {msgs.map((msg) => (
+      {messages.map((msg) => (
         <div
           key={Math.random() + msg.sentBy + Date.now()}
           className="px-2 py-2"

@@ -3,8 +3,21 @@ import OnlineUsers from "./OnlineUsers";
 import ChatGroup from "./ChatGroup";
 import { isAuthenticated } from "./utils/auth";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { socket } from "./socket";
 
 function App() {
+  useEffect(() => {
+    if (isAuthenticated()) {
+      socket.connect();
+      socket.emit("register", sessionStorage.getItem("username"));
+    }
+
+    return () => {
+      if (!socket.disconnected) socket.disconnect();
+    };
+  }, []);
+
   return (
     <>
       <div className="dark:bg-gray-950 bg-white h-screen flex flex-col">
