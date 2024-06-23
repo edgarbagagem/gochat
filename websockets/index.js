@@ -33,6 +33,15 @@ io.on("connection", (socket) => {
     console.log("Registering user ", username);
     emitUserList();
   });
+
+  socket.on("message", (message) => {
+    console.log("Message received: ", message);
+    io.emit("message", {
+      sentBy: connectedUsers.find((user) => user.socket === socket.id)
+        ?.username,
+      content: message,
+    });
+  });
 });
 
 server.listen(3000, () => {

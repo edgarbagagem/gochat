@@ -20,15 +20,15 @@ function App() {
 
   return (
     <>
-      <div className="dark:bg-gray-950 bg-white h-screen flex flex-col">
+      <div className="dark:bg-gray-950 bg-white flex flex-col h-screen">
         <NavBar />
-        <div className="flex flex-row flex-wrap justify-stretch items-stretch h-full mt-1">
+        <div className="flex flex-row flex-wrap justify-stretch items-stretch mt-1 ">
           {isAuthenticated() ? (
             <>
-              <div className="basis-1/4">
+              <div className="basis-1/4 h-fit max-h-screen">
                 <OnlineUsers />
               </div>
-              <div className="basis-3/4">
+              <div className="basis-3/4 h-fit max-h-screen">
                 <ChatGroup />
               </div>
             </>

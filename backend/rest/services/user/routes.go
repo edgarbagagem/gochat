@@ -6,6 +6,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -217,6 +218,12 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate username
+	if !isValidUsername(payload.Username) {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("username must be at least 3 characters long and contain at least one letter"))
+		return
+	}
+
 	_, err := h.store.GetUserByUsername(payload.Username)
 
 	if err == nil {
@@ -242,4 +249,13 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteJSON(w, http.StatusCreated, nil)
+}
+
+func isValidUsername(username string) bool {
+	// Check if the username is at least 3 characters long and contains at least one letter
+	if len(username) < 3 {
+		return false
+	}
+	match, _ := regexp.MatchString(`[a-zA-Z]`, username)
+	return match
 }

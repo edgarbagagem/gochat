@@ -35,12 +35,16 @@ export default function NavBar() {
       .catch((error) => {
         const axiosError = error as AxiosError;
         if (axiosError.response) {
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          toast.error(`Upload failed: ${axiosError.response.data}`);
-          console.error("Upload failed:", axiosError.response.data);
+          toast.error(
+            `Error getting user info (photo): ${axiosError.response.data.error}`
+          );
+          console.error(
+            "Error getting user info (photo):",
+            axiosError.response.data
+          );
         } else {
-          toast.error("Upload failed: Network or unknown error");
-          console.error("Upload failed:", axiosError.message);
+          toast.error("Error getting user info (photo):");
+          console.error("Error getting user info (photo):", axiosError.message);
         }
       });
   }, []);
