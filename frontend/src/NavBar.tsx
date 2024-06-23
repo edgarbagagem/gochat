@@ -36,7 +36,9 @@ export default function NavBar() {
         const axiosError = error as AxiosError;
         if (axiosError.response) {
           toast.error(
-            `Error getting user info (photo): ${axiosError.response.data.error}`
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            //@ts-expect-error
+            `Error getting user info (photo): ${axiosError.response?.data?.error}`
           );
           console.error(
             "Error getting user info (photo):",
