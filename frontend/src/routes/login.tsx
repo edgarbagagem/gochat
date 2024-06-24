@@ -17,7 +17,7 @@ const Login = () => {
         { username, password }
       );
       sessionStorage.setItem("jwtToken", response.data.token);
-      sessionStorage.setItem("username", response.data.username);
+      sessionStorage.setItem("username", username);
       toast.success("Login successful");
       navigate("/");
     } catch (error) {

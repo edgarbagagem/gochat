@@ -27,7 +27,7 @@ export default function NavBar() {
     if (!username) return;
 
     axios
-      .get<GetUserResponse>(`/users/${username}`)
+      .get<GetUserResponse>(`/profile-photo/${username}`)
       .then((resp) => {
         const user: GetUserResponse = resp.data;
         setUserPhoto(user.photo);

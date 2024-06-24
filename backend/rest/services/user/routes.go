@@ -29,9 +29,9 @@ func NewHandler(store types.UserStore) *Handler {
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/login", h.handleLogin).Methods(http.MethodPost)
 	router.HandleFunc("/register", h.handleRegister).Methods(http.MethodPost)
-	router.HandleFunc("/users/{user}", h.handleGetUser).Methods(http.MethodGet)
-	router.HandleFunc("/users/{userID}", h.handleUpdateUser).Methods(http.MethodPut)
-	router.HandleFunc("/upload-photo", h.handleUploadPhoto).Methods(http.MethodPost)
+	router.HandleFunc("/profile-photo/{user}", auth.WithJWTAuth(h.handleGetUserPhoto, h.store)).Methods(http.MethodGet)
+	router.HandleFunc("/users/{userID}", auth.WithJWTAuth(h.handleUpdateUser, h.store)).Methods(http.MethodPut)
+	router.HandleFunc("/upload-photo", auth.WithJWTAuth(h.handleUploadPhoto, h.store)).Methods(http.MethodPost)
 }
 
 func (h *Handler) handleUploadPhoto(w http.ResponseWriter, r *http.Request) {
@@ -142,7 +142,7 @@ func (h *Handler) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusOK, "")
 }
 
-func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleGetUserPhoto(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	user := vars["user"]
 
@@ -208,7 +208,7 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token, "username": user.Username})
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token})
 
 }
 func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {

@@ -1,5 +1,3 @@
-// src/components/UploadProfilePhotoPage.tsx
-
 import React, { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "../api/axios";
@@ -38,6 +36,7 @@ const UploadProfilePhoto: React.FC = () => {
       await axios.post("upload-photo", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
+          Authorization: sessionStorage.getItem("jwtToken"),
         },
       });
 
@@ -46,8 +45,9 @@ const UploadProfilePhoto: React.FC = () => {
     } catch (error) {
       const axiosError = error as AxiosError;
       if (axiosError.response) {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        toast.error(`Upload failed: ${axiosError.response.data}`);
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/ban-ts-comment
+        //@ts-expect-error
+        toast.error(`Upload failed: ${axiosError.response.data.error}`);
         console.error("Upload failed:", axiosError.response.data);
       } else {
         toast.error("Upload failed: Network or unknown error");

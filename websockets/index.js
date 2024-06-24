@@ -9,7 +9,6 @@ const io = new Server(server, {
     origin: process.env.CORS_ORIGIN || "http://localhost:5173",
   },
 });
-console.log(process.env.CORS_ORIGIN);
 app.get("/", (req, res) => {
   res.send("<h1>Gochat Websocket Server</h1>");
 });

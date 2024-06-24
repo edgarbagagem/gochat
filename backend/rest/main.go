@@ -17,6 +17,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	api := api.NewAPIServer(":8080", db)
+	api := api.NewAPIServer(fmt.Sprintf(":%s", config.Envs.Port), db)
 	api.Run()
 }
