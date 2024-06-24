@@ -97,11 +97,6 @@ func uploadFileToGCS(file multipart.File, handler *multipart.FileHeader) (string
 		return "", fmt.Errorf("failed to close bucket writer: %v", err)
 	}
 
-	// // Make the object publicly accessible
-	// if err := bucket.Object(objectName).ACL().Set(ctx, storage.AllUsers, storage.RoleReader); err != nil {
-	// 	return "", fmt.Errorf("failed to set bucket object ACL: %v", err)
-	// }
-
 	return fmt.Sprintf("https://storage.googleapis.com/%s/%s", bucketName, objectName), nil
 }
 
