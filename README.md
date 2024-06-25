@@ -14,14 +14,5 @@ Simple chat application with weird features like a cron job for displaying weath
 
 ### Databases
 
-- Cloud File Storage (Which??)
+- Cloud File Storage (Google Cloud File Storage)
 - Cloud SQL Database (Turso)
-- Cloud NoSQL Database (Mongo atlas?)
-
-### External APIs
-
-Idea: https://openweathermap.org/api https://api.ipma.pt/
-
-### Cron Job
-
-Idea: Maybe something like sending a message in the chat to with current weather for one or multiple cities...
