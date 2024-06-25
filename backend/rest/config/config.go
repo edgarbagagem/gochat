@@ -21,7 +21,7 @@ var Envs = InitConfig()
 func InitConfig() Config {
 	godotenv.Load()
 	return Config{
-		Port:                         getEnv("PORT", ":8080"),
+		Port:                         getEnv("PORT", "8080"),
 		DBName:                       getEnv("DB_NAME", "dbname"),
 		DBToken:                      getEnv("DB_TOKEN", "randomdatabasetoken"),
 		JWTSecret:                    getEnv("JWT_SECRET", "randomjwtsecret"),

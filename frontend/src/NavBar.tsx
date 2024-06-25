@@ -25,7 +25,7 @@ export default function NavBar() {
     const username = sessionStorage.getItem("username");
     setUsername(username || "");
     if (!username) return;
-
+    if (!sessionStorage.getItem("jwtToken")) return;
     axios
       .get<GetUserResponse>(`/profile-photo/${username}`)
       .then((resp) => {
