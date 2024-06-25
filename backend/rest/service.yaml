@@ -4,7 +4,7 @@ metadata:
   name: gochat-api-service
 spec:
   selector:
-    app: go-rest-api
+    app: gochat-api
   ports:
     - protocol: TCP
       port: 80
