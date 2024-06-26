@@ -1,0 +1,16 @@
+{
+  "name": "joke-cronjob",
+  "version": "1.0.0",
+  "description": "",
+  "main": "messageSender.js",
+  "dependencies": {
+    "node-fetch": "^2.6.1",
+    "socket.io-client": "^4.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node messageSender.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
