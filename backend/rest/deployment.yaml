@@ -30,3 +30,5 @@ spec:
                 secretKeyRef:
                   name: api-secrets
                   key: JWT_SECRET
+            - name: FRONTEND_URL
+              value: http://gochat-frontend-service

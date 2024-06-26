@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gochat-ws-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gochat-ws
+  template:
+    metadata:
+      labels:
+        app: gochat-ws
+    spec:
+      containers:
+        - name: gochat-ws
+          image: eddygarr/gochat-websockets:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: CORS_ORIGIN
+              value: http://gochat-frontend-service

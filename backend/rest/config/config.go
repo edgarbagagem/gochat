@@ -14,6 +14,7 @@ type Config struct {
 	JWTSecret                    string
 	GoogleApplicationCredentials string
 	JWTExpirationInSeconds       int64
+	FrontendURL                  string
 }
 
 var Envs = InitConfig()
@@ -27,6 +28,7 @@ func InitConfig() Config {
 		JWTSecret:                    getEnv("JWT_SECRET", "randomjwtsecret"),
 		JWTExpirationInSeconds:       getEnvAsInt("JWT_EXPIRATION_SECONDS", 3600),
 		GoogleApplicationCredentials: getEnv("GOOGLE_APPLICATION_CREDENTIALS", ""),
+		FrontendURL:                  getEnv("FRONTEND_URL", "http://localhost:8001"),
 	}
 }
 

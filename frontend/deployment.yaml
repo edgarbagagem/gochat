@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gochat-frontend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gochat-frontend
+  template:
+    metadata:
+      labels:
+        app: gochat-frontend
+    spec:
+      containers:
+        - name: gochat-frontend
+          image: eddygarr/gochat-frontend:latest
+          ports:
+            - containerPort: 80

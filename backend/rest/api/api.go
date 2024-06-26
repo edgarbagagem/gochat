@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/edgarbagagem/gochat/config"
 	"github.com/edgarbagagem/gochat/services/user"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -36,7 +37,7 @@ func (s *APIServer) Run() {
 
 	// Configure CORS
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173"}, // Replace with your frontend URL
+		AllowedOrigins:   []string{"http://localhost:5173", config.Envs.FrontendURL},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},
 		AllowCredentials: true,
