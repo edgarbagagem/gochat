@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gochat-api-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gochat-api
+  template:
+    metadata:
+      labels:
+        app: gochat-api
+    spec:
+      containers:
+        - name: gochat-api
+          image: eddygarr/gochat-api:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_NAME
+              value: gochat-edgarbagagem
+            - name: DB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: DB_TOKEN
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: JWT_SECRET
+            - name: FRONTEND_URL
+              value: http://gochat-frontend-service
+          livenessProbe:
+            httpGet:
+              path: "/health"
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 150
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gochat-api-service
+spec:
+  selector:
+    app: gochat-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: NodePort
