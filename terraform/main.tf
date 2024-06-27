@@ -1,15 +1,21 @@
+variable "location" {}
+variable "project_id" {
+}
+variable "machine_type" {
+  
+}
 provider "google" {
-  project = "fastuga"
-  region  = "us-central1"
+  project = var.project_id
+  region  = var.location
 }
 
 data "google_secret_manager_secret_version" "db_token" {
-  secret  = "projects/fastuga/secrets/DB_TOKEN"
+  secret  = "projects/${var.project_id}/secrets/DB_TOKEN"
   version = "latest"
 }
 
 data "google_secret_manager_secret_version" "jwt_secret" {
-  secret  = "projects/fastuga/secrets/JWT_SECRET"
+  secret  = "projects/${var.project_id}/secrets/JWT_SECRET"
   version = "latest"
 }
 
@@ -25,43 +31,31 @@ resource "kubernetes_secret" "api_secrets" {
   }
 }
 
-# resource "google_container_cluster" "primary" {
-#   name     = "primary-cluster"
-#   location = "us-central1"
-#   initial_node_count = 1
+resource "google_container_cluster" "primary" {
+  name     = "primary-cluster"
+  location = var.location
+  initial_node_count = 1
 
-#   node_config {
-#     machine_type = "e2-medium"
-#   }
-# }
+  deletion_protection = false
+  node_config {
+    machine_type = var.machine_type
+  }
+}
 
-# resource "google_container_node_pool" "primary_nodes" {
-#   name       = "primary-node-pool"
-#   location   = google_container_cluster.primary.location
-#   cluster    = google_container_cluster.primary.name
-#   node_count = 1
+resource "google_container_node_pool" "primary_nodes" {
+  name       = "primary-node-pool"
+  location   = google_container_cluster.primary.location
+  cluster    = google_container_cluster.primary.name
+  node_count = 1
 
-#   node_config {
-#     preemptible  = true
-#     machine_type = "e2-medium"
-#     oauth_scopes = [
-#       "https://www.googleapis.com/auth/cloud-platform",
-#     ]
-#   }
-# }
+  node_config {
+    disk_size_gb = 10
+    preemptible  = true
+    machine_type = var.machine_type
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform",
+    ]
+  }
+}
 
-# output "kubeconfig" {
-#   value = google_container_cluster.primary.endpoint
-# }
 
-# output "client_certificate" {
-#   value = base64decode(google_container_cluster.primary.master_auth[0].client_certificate)
-# }
-
-# output "client_key" {
-#   value = base64decode(google_container_cluster.primary.master_auth[0].client_key)
-# }
-
-# output "cluster_ca_certificate" {
-#   value = base64decode(google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
-# }
