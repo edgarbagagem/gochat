@@ -78,6 +78,7 @@ resource "kubernetes_deployment" "gochat-api" {
         }
       }
       spec {
+        service_account_name = "gochat-service-account"
         container {
           name  = "gochat-api"
           image = "eddygarr/gochat-api:latest"
