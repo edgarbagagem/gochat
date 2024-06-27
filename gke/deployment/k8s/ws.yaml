@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gochat-ws-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gochat-ws
+  template:
+    metadata:
+      labels:
+        app: gochat-ws
+    spec:
+      containers:
+        - name: gochat-ws
+          image: eddygarr/gochat-websockets:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: CORS_ORIGIN
+              value: http://gochat-frontend-service  
+          livenessProbe:
+            httpGet:
+              path: "/"
+              port: 3000
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 150
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gochat-ws-service
+  namespace: default
+spec:
+  selector:
+    app: gochat-ws
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: NodePort
