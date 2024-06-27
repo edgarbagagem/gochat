@@ -1,9 +1,13 @@
+
+data "google_client_config" "provider" {}
 provider "kubernetes" {
-  config_path = "~/.kube/config"
-  # host                   = google_container_cluster.primary.endpoint
-  # client_certificate     = base64decode(google_container_cluster.primary.master_auth[0].client_certificate)
-  # client_key             = base64decode(google_container_cluster.primary.master_auth[0].client_key)
-  # cluster_ca_certificate = base64decode(google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
+  host                   = "https://${google_container_cluster.primary.endpoint}"
+  cluster_ca_certificate = base64decode(google_container_cluster.primary.master_auth[0].cluster_ca_certificate)
+  token = data.google_client_config.provider.access_token
+    exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "gke-gcloud-auth-plugin"
+  }
 }
 
 resource "kubernetes_deployment" "gochat-frontend" {
@@ -47,10 +51,11 @@ resource "kubernetes_service" "gochat-frontend" {
       app = "gochat-frontend"
     }
     port {
+      name = "frontend-port"
       port        = 80
       target_port = 80
     }
-    type = "ClusterIP"
+    type = "NodePort"
   }
 }
 
@@ -60,7 +65,7 @@ resource "kubernetes_deployment" "gochat-api" {
     namespace = "default"
   }
   spec {
-    replicas = 1
+    replicas = 2
     selector {
       match_labels = {
         app = "gochat-api"
@@ -77,7 +82,7 @@ resource "kubernetes_deployment" "gochat-api" {
           name  = "gochat-api"
           image = "eddygarr/gochat-api:latest"
           port {
-            container_port = 80
+            container_port = 8080
           }
           env {
             name = "DB_NAME"
@@ -105,6 +110,14 @@ resource "kubernetes_deployment" "gochat-api" {
             name  = "FRONTEND_URL"
             value = "http://gochat-frontend-service"
           }
+          readiness_probe {
+            http_get {
+              path = "/health"
+              port = 8080
+            }
+            initial_delay_seconds = 30
+            period_seconds        = 10
+          }
         }
       }
     }
@@ -121,10 +134,11 @@ resource "kubernetes_service" "gochat-api" {
       app = "gochat-api"
     }
     port {
+      name = "api-port"
       port        = 80
       target_port = 8080
     }
-    type = "ClusterIP"
+    type = "NodePort"
   }
 }
 
@@ -157,6 +171,14 @@ resource "kubernetes_deployment" "gochat-ws" {
             name  = "CORS_ORIGIN"
             value = "http://gochat-frontend-service"
           }
+                    readiness_probe {
+            http_get {
+              path = "/"
+              port = 3000
+            }
+            initial_delay_seconds = 30
+            period_seconds        = 10
+          }
         }
       }
     }
@@ -173,10 +195,11 @@ resource "kubernetes_service" "gochat-ws" {
       app = "gochat-ws"
     }
     port {
+      name = "ws-port"
       port        = 3000
       target_port = 3000
     }
-    type = "ClusterIP"
+    type = "NodePort"
   }
 }
 
@@ -217,39 +240,45 @@ resource "kubernetes_ingress_v1" "gochat-ingress" {
   metadata {
     name = "gochat-ingress"
     namespace = "default"
+    annotations = {"cloud.google.com/load-balancer-type": "External"
+    "kubernetes.io/ingress.class": "gce"}
   }
+  
   spec {
     rule {
       http {
         path {
           path = "/"
+          path_type = "Prefix"
           backend {
             service {
             name = kubernetes_service.gochat-frontend.metadata[0].name
             port { 
-                number =  "80"
+                name = "frontend-port"
               }
           }
         }
         }
         path {
           path = "/api"
+          path_type = "Prefix"
           backend {
             service {
             name = kubernetes_service.gochat-api.metadata[0].name
             port { 
-                number =  "80"
+                name = "api-port"
               }
             }
           }
         }
         path {
           path = "/socket.io"
+          path_type = "Prefix"
           backend {
             service {
               name = kubernetes_service.gochat-ws.metadata[0].name
               port { 
-                number =  "3000"
+                name = "ws-port"
                 }
             }
           }
@@ -258,5 +287,3 @@ resource "kubernetes_ingress_v1" "gochat-ingress" {
     }
   }
   }
-
-

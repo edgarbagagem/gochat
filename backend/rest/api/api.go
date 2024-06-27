@@ -24,10 +24,20 @@ func NewAPIServer(addr string, db *sql.DB) *APIServer {
 	}
 }
 
+// Health check handler
+func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
+}
+
 func (s *APIServer) Run() {
 	log.Printf("API Server is starting at %s", s.addr)
 
 	router := mux.NewRouter()
+	router.HandleFunc("/health", healthCheckHandler).Methods("GET")
+	router.HandleFunc("/health/", healthCheckHandler).Methods("GET")
+	router.HandleFunc("/api/health", healthCheckHandler).Methods("GET")
+	router.HandleFunc("/api/health/", healthCheckHandler).Methods("GET")
 	subrouter := router.PathPrefix("/api/v1/").Subrouter()
 
 	//register services
@@ -44,7 +54,7 @@ func (s *APIServer) Run() {
 	})
 
 	// Use the CORS middleware
-	handler := c.Handler(subrouter)
+	handler := c.Handler(router)
 
 	log.Fatal(http.ListenAndServe(s.addr, handler))
 }
