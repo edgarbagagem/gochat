@@ -1,6 +1,6 @@
 # Gochat
 
-Simple chat application with weird features like a cron job for displaying weather.
+Simple chat application with weird features like a cron job for telling a random joke every minute.
 
 ### Backend
 
